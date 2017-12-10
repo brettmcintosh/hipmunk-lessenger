@@ -40,24 +40,38 @@ class BaseMessage:
 
 class Greeting(BaseMessage):
     """A greeting message for the start of a chat session."""
-
     TEMPLATE_CHOICES = templates.GREETINGS
 
 
-class Forecast(BaseMessage):
+class WeatherReport(BaseMessage):
     """A message that gives a forecast for a location."""
     TEMPLATE_CHOICES = templates.WEATHER_REPORTS
 
-    TEMPLATE_CHOICES = templates.FORECASTS
+    def __init__(self, context=None):
+        self.phrase_regex = tuple(
+            re.compile(pattern)
+            for pattern in phrases.QUERY_PHRASES
+        )
+        super().__init__(context=context)
 
-    def __init__(self, form_body):
-        parsed_location = self.parse_location(form_body)
+    def render_body(self):
+        parsed_location = self.parse_location(self.context)
         location = self.get_location(parsed_location)
-        forecast = self.get_forecast(location)
-        super().__init__(forecast)
+        forecast = self.get_current_weather(location)
+        self.context = forecast.as_dict()
+        super().render_body()
 
     def parse_location(self, form_body: dict) -> str:
-        return ''
+        """Parse the query and extract the location string."""
+        query = form_body['text']
+        for regex in self.phrase_regex:
+            result = regex.match(query)
+            if result is not None:
+                return result.group(1)
+        raise ParseError(
+            'Did not recognize phrase: {}'.format(query),
+            data=query
+        )
 
     def get_location(self, parsed_location: str) -> LocationCoords:
         """Fetch location from geo service."""
