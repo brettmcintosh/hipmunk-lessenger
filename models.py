@@ -55,9 +55,9 @@ class WeatherReport(BaseMessage):
         super().__init__(context=context)
 
     def render_body(self):
-        parsed_location = self.parse_location(self.context)
+        parsed_location, parsed_time = self.parse_location(self.context)
         location = self.get_location(parsed_location)
-        forecast = self.get_current_weather(location)
+        forecast = self.get_current_weather(location, parsed_time)
         self.context = forecast.as_dict()
         super().render_body()
 
@@ -67,7 +67,10 @@ class WeatherReport(BaseMessage):
         for regex in self.phrase_regex:
             result = regex.match(query)
             if result is not None:
-                return result.group(1)
+                data = result.groupdict()
+                if 'time' not in data:
+                    data['time'] = 'today'
+                return data['location'], data['time']
         raise ParseError(
             'Did not recognize phrase: {}'.format(query),
             data=query
@@ -85,9 +88,9 @@ class WeatherReport(BaseMessage):
         coords = first_result_coords['lat'], first_result_coords['lng']
         return LocationCoords(*coords)
 
-    def get_current_weather(self, location: LocationCoords) -> Weather:
+    def get_current_weather(self, location: LocationCoords, time: str) -> Weather:
         """Fetch forecast from weather API."""
-        return get_weather(location)
+        return get_weather(location, time)
 
 
 class ParseErrorMessage(BaseMessage):

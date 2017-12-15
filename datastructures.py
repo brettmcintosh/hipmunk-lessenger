@@ -9,8 +9,10 @@ class LocationCoords(NamedTuple):
 
 class Weather(NamedTuple):
     """Summary of the weather for a location."""
-    temperature: float
+    low_temperature: float
+    high_temperature: float
     description: str
+    time: str
 
     def as_dict(self) -> dict:
         """Return fields as a dict for keyword unpacking."""

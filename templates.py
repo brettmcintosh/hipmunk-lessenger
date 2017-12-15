@@ -5,9 +5,9 @@ GREETINGS = (
 )
 
 WEATHER_REPORTS = (
-    'Currently it\'s {{ temperature }}F. {{ description|title }}',
-    'Well, right now it\'s {{ temperature }}F and {{ description }}',
-    '{{ description|title }} - {{ temperature }}F',
+    '{{ time }} the low is {{ low_temperature }}F and the high is {{ high_temperature }}. {{ description|title }}',
+    # 'Well, right now it\'s {{ temperature }}F and {{ description }}',
+    # '{{ description|title }} - {{ temperature }}F',
 )
 
 PARSE_ERROR = (
